@@ -48,7 +48,7 @@ async def generate_qoe(payload: dict):
     prompt = build_prompt(prompt_type, data)
 
     # New code for using the latest API
-    response = openai.Completion.create(
+    response = openai.completions.create(
         model="gpt-4",  # or "gpt-4-turbo" if you prefer
         prompt=prompt,
         max_tokens=500  # Adjust this as per your needs

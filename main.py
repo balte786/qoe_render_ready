@@ -8,6 +8,7 @@ import openai
 import os
 from docx import Document
 from docx.shared import Pt
+from openai import OpenAI
 
 app = FastAPI()
 
@@ -41,20 +42,25 @@ async def upload_file(file: UploadFile = File(...)):
     qoe_cache['data'] = df.to_dict(orient='records')
     return {"message": "File received", "summary": summary, "data": qoe_cache['data']}
 
+
+client = OpenAI()
+
 @app.post("/generate_qoe")
 async def generate_qoe(payload: dict):
     prompt_type = payload.get("type", "executive_summary")
     data = payload.get("financial_summary", "")
     prompt = build_prompt(prompt_type, data)
 
-    # New code for using the latest API
-    response = openai.completions.create(
-        model="gpt-4",  # or "gpt-4-turbo" if you prefer
-        prompt=prompt,
-        max_tokens=500  # Adjust this as per your needs
+    response = client.chat.completions.create(
+        model="gpt-4",  # or "gpt-4-turbo" or "gpt-4o"
+        messages=[
+            {"role": "system", "content": "You are a financial due diligence analyst."},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=500,
     )
-    
-    content = response['choices'][0]['text'].strip()  # Access the text output
+
+    content = response.choices[0].message.content.strip()
 
     if 'qoe_report' not in qoe_cache:
         qoe_cache['qoe_report'] = {}

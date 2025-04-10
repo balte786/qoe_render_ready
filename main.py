@@ -46,17 +46,21 @@ async def generate_qoe(payload: dict):
     prompt_type = payload.get("type", "executive_summary")
     data = payload.get("financial_summary", "")
     prompt = build_prompt(prompt_type, data)
-    response = openai.ChatCompletion.create(
-        model="gpt-4-turbo",
-        messages=[
-            {"role": "system", "content": "You are a financial due diligence analyst."},
-            {"role": "user", "content": prompt}
-        ]
+
+    # New code for using the latest API
+    response = openai.Completion.create(
+        model="gpt-4",  # or "gpt-4-turbo" if you prefer
+        prompt=prompt,
+        max_tokens=500  # Adjust this as per your needs
     )
-    content = response['choices'][0]['message']['content']
+    
+    content = response['choices'][0]['text'].strip()  # Access the text output
+
     if 'qoe_report' not in qoe_cache:
         qoe_cache['qoe_report'] = {}
+
     qoe_cache['qoe_report'][prompt_type] = content
+
     return {"qoe_summary": content}
 
 @app.get("/export_docx")

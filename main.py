@@ -58,7 +58,9 @@ async def generate_qoe(payload: dict):
     if prompt_type == "working_capital" and "balance_sheet" in qoe_cache:
         bs_preview = qoe_cache["balance_sheet"].to_string(index=False)
         data += f"\n\nBalance Sheet Data:\n{bs_preview}"
+    
     prompt = build_prompt(prompt_type, data)
+
     response = client.chat.completions.create(
         model="gpt-4-turbo",
         messages=[
@@ -66,10 +68,13 @@ async def generate_qoe(payload: dict):
             {"role": "user", "content": prompt}
         ]
     )
-    content = response['choices'][0]['message']['content']
+
+    content = response.choices[0].message.content  # <- Corrected here
+
     if 'qoe_report' not in qoe_cache:
         qoe_cache['qoe_report'] = {}
     qoe_cache['qoe_report'][prompt_type] = content
+
     return {"qoe_summary": content}
 
 @app.get("/export_docx")

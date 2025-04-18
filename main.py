@@ -12,6 +12,8 @@ from docx.shared import Pt
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from openai import OpenAI
+from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
@@ -22,6 +24,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.post("/upload/adbacks")
+async def upload_adbacks(file: UploadFile = File(...)):
+    contents = await file.read()
+    return {"filename": file.filename, "size": len(contents), "message": "Adbacks uploaded successfully"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
